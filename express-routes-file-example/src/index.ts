@@ -1,4 +1,4 @@
-import * as express from 'express'
+import express from 'express'
 import configureRoutes from 'express-routes-file'
 
 const app = express()
