@@ -1,0 +1,24 @@
+{
+  "name": "express-routes-file-example",
+  "version": "1.0.0",
+  "description": "Example of using express-routes-file with typescript.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prestart": "npm run build",
+    "start": "node .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Dylan Nissley",
+  "license": "Unlicense",
+  "repository": "dnissley/ts",
+  "dependencies": {
+    "@types/express": "^4.17.6",
+    "express": "^4.17.1",
+    "express-routes-file": "^1.0.4"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.5"
+  }
+}
