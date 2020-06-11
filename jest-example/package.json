@@ -4,6 +4,7 @@
   "description": "Example of using jest with typescript.",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "test": "jest"
   },
   "keywords": [],

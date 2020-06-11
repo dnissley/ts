@@ -2,5 +2,14 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "strict": true,
-  }
+    "noEmitOnError": true,
+    "outDir": "./lib",
+    "declaration": true,
+    "lib": [
+      "ES2020"
+    ]
+  },
+  "include": [
+    "./src/**/*.ts"
+  ]
 }
