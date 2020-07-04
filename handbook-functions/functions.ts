@@ -95,3 +95,145 @@ const employeeName = buildName3("Joseph", "Samuel", "Lucas", "MacKinzie");
 
 // the rest "ellipsis" is part of the function type
 const buildName4: (f: string, ...r: string[]) => string = buildName3;
+
+// ----------------------------------------------------------------------------
+// this and non-arrow functions:
+// ----------------------------------------------------------------------------
+
+const brokenDeck = {
+  suits: ["hearts", "spades", "clubs", "diamonds"],
+  cards: Array(52),
+  createCardPicker: function () {
+    return function () {
+      let pickedCard = Math.floor(Math.random() * 52);
+      let pickedSuit = Math.floor(pickedCard / 13);
+
+      return {
+        // Q: what is `this` referring to?
+        // A: it depends on where this function is invoked
+        // if "within" `brokenDeck` then `this.suits` will refer
+        //   to `brokenDeck.suits`
+        // if "outside" `brokenDeck` then `this.suits` will refer
+        //   to `<global>.suits`
+        suit: this.suits[pickedSuit],
+        card: pickedCard % 13,
+      };
+    };
+  },
+};
+
+const cardPicker = brokenDeck.createCardPicker();
+try {
+  cardPicker();
+} catch (e) {
+  // error: cannot read property '1' of undefined
+  console.error(e);
+}
+
+// in a non-arrow function, this changes based on where the function is invoked
+// so if a non-arrow function is returned from one context and invoked from
+// outside that context, it may not have access to the same data
+
+// ----------------------------------------------------------------------------
+// this and arrow functions:
+// ----------------------------------------------------------------------------
+
+const fixedDeck = {
+  suits: ["hearts", "spades", "clubs", "diamonds"],
+  cards: Array(52),
+  createCardPicker: function () {
+    return () => {
+      let pickedCard = Math.floor(Math.random() * 52);
+      let pickedSuit = Math.floor(pickedCard / 13);
+
+      // Q: what is `this` referring to now?
+      // A: since this is a non-arrow function, `this` is "fixed" to the
+      //      context in which the function is defined, so that no matter
+      //      where it is invoked, it always is referring to the same thing
+      return {
+        suit: this.suits[pickedSuit],
+        card: pickedCard % 13,
+      };
+    };
+  },
+};
+
+const cardPicker1 = fixedDeck.createCardPicker();
+const pickedCard1 = cardPicker1();
+
+console.log("card: " + pickedCard1.card + " of " + pickedCard1.suit);
+
+// unfortunately, `this.suits` is still implicitly `any`
+
+// the next section shows how to fix this using a this parameter
+
+// ----------------------------------------------------------------------------
+// this parameters:
+// ----------------------------------------------------------------------------
+
+interface Card {
+  suit: string;
+  card: number;
+}
+
+interface Deck {
+  suits: string[];
+  cards: number[];
+  createCardPicker(this: Deck): () => Card;
+}
+
+const fixedDeck1: Deck = {
+  suits: ["hearts", "spades", "clubs", "diamonds"],
+  cards: Array(52),
+  // the function now explicitly specifies that its callee must be of type Deck
+  // meaning if you tried to invoke this function
+  createCardPicker: function (this: Deck) {
+    return () => {
+      let pickedCard = Math.floor(Math.random() * 52);
+      let pickedSuit = Math.floor(pickedCard / 13);
+
+      return {
+        suit: this.suits[pickedSuit],
+        card: pickedCard % 13,
+      };
+    };
+  },
+};
+
+// works as before:
+const cardPicker2 = fixedDeck1.createCardPicker();
+const pickedCard2 = cardPicker2();
+
+// does not work since the function is not invoked from a deck object:
+const cardPickerCreator = fixedDeck1.createCardPicker;
+// below error: the 'this' context of type 'void' is not assignable to method's 'this' of type 'Deck'
+// const cardPicker3 = cardPickerCreator();
+
+// this parameters must be first in a parameter list, and can't be included
+// on arrow functions
+
+// ----------------------------------------------------------------------------
+// specifying that a callback doesn't rely on this:
+// ----------------------------------------------------------------------------
+
+interface UIElement {
+  // notice the use of `this: void` -- this specifies that a callback either should
+  //   be an arrow function, or a non-arrow function that doesn't reference `this`
+  addClickListener(onclick: (this: void, e: Event) => void): void;
+}
+const uiElement: UIElement = {
+  addClickListener(onClick) {
+    console.log("called addClickListener");
+  },
+};
+
+class Handler {
+  info: string;
+  onClickBad(this: Handler, e: Event) {
+    // oops, used `this` here. using this callback would crash at runtime
+    this.info = `is it cancelable? ${e.cancelable ? "yes" : "no"}`;
+  }
+}
+let h = new Handler();
+// uiElement.addClickListener(h.onClickBad); // error:
+// Argument of type '(this: Handler, e: Event) => void' is not assignable to parameter of type '(this: void, e: Event) => void'.
