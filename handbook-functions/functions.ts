@@ -237,3 +237,38 @@ class Handler {
 let h = new Handler();
 // uiElement.addClickListener(h.onClickBad); // error:
 // Argument of type '(this: Handler, e: Event) => void' is not assignable to parameter of type '(this: void, e: Event) => void'.
+
+// ----------------------------------------------------------------------------
+// function overloads / overloading:
+// ----------------------------------------------------------------------------
+
+const suits = ["hearts", "spades", "clubs", "diamonds"];
+
+// overloads happening here:
+function pickCard(x: { suit: string; card: number }[]): number;
+function pickCard(x: number): { suit: string; card: number };
+function pickCard(x: any): any {
+  // Check to see if we're working with an object/array
+  // if so, they gave us the deck and we'll pick the card
+  if (typeof x == "object") {
+    let pickedCard = Math.floor(Math.random() * x.length);
+    return pickedCard;
+  }
+  // Otherwise just let them pick the card
+  else if (typeof x == "number") {
+    let pickedSuit = Math.floor(x / 13);
+    return { suit: suits[pickedSuit], card: x % 13 };
+  }
+}
+
+const myDeck = [
+  { suit: "diamonds", card: 2 },
+  { suit: "spades", card: 10 },
+  { suit: "hearts", card: 4 },
+];
+
+const pickedCard3 = myDeck[pickCard(myDeck)];
+console.log("card: " + pickedCard3.card + " of " + pickedCard3.suit);
+
+let pickedCard4 = pickCard(15);
+console.log("card: " + pickedCard4.card + " of " + pickedCard4.suit);
